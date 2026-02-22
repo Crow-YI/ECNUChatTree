@@ -9,7 +9,7 @@ using TreeChat.Models;
 
 namespace TreeChat.ViewModels
 {
-    public class TreeNodeViewModel : BaseViewModel
+    public class TreeNodeVM : BaseViewModel
     {
         //绘图属性
         public const double WIDTH = 40;
@@ -26,29 +26,29 @@ namespace TreeChat.ViewModels
 
         public int ID => Node.NodeID;
 
-        public TreeNodeViewModel? ParentNode { get; }
+        public TreeNodeVM? ParentNode { get; }
 
-        private readonly ObservableCollection<TreeNodeViewModel> _children;
-        public ReadOnlyObservableCollection<TreeNodeViewModel> Children { get; }
+        private readonly ObservableCollection<TreeNodeVM> _children;
+        public ReadOnlyObservableCollection<TreeNodeVM> Children { get; }
 
-        public TreeNodeViewModel(ChatTreeNode node, TreeNodeViewModel? parentNode)
+        public TreeNodeVM(ChatTreeNode node, TreeNodeVM? parentNode)
         {
             Node = node;
-            _children = new ObservableCollection<TreeNodeViewModel>();
-            Children = new ReadOnlyObservableCollection<TreeNodeViewModel>(_children);
+            _children = new ObservableCollection<TreeNodeVM>();
+            Children = new ReadOnlyObservableCollection<TreeNodeVM>(_children);
 
             foreach (var child in Node.ChildNodes)
             {
-                _children.Add(new TreeNodeViewModel(child, this));
+                _children.Add(new TreeNodeVM(child, this));
             }
 
             ParentNode = parentNode;
         }
 
-        public TreeNodeViewModel AddChild(ChatTreeNode childNode)
+        public TreeNodeVM AddChild(ChatTreeNode childNode)
         {
             Node.ChildNodes.Add(childNode);
-            var childViewModel = new TreeNodeViewModel(childNode, this);
+            var childViewModel = new TreeNodeVM(childNode, this);
             _children.Add(childViewModel);
             return childViewModel;
         }

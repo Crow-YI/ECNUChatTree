@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace TreeChat.ViewModels
+namespace TreeChat.Commands
 {
     public class RelayCommand : ICommand
     {
@@ -23,7 +23,7 @@ namespace TreeChat.ViewModels
 
         public bool CanExecute(object? parameter)
         {
-            return (_canExecte == null) || (_canExecte(parameter));
+            return _canExecte == null || _canExecte(parameter);
         }
 
         public void Execute(object? parameter)

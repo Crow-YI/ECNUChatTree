@@ -14,6 +14,8 @@ namespace TreeChat.Services
     {
         private readonly HttpClient _httpClient;
 
+        public static OpenAIChat Instance { get; private set; } = new OpenAIChat();
+
         public OpenAIChat()
         {
             _httpClient = new HttpClient();

@@ -15,8 +15,8 @@ namespace TreeChat.Views
 {
     public partial class TreeVisualizationView : UserControl
     {
-        private ChatTree _chatTree;
-        private TreeNodeViewModel _rootViewModel;
+        private TreeVisualizationVM? _vm;
+
         private Dictionary<int, FrameworkElement> _nodeElements = new Dictionary<int, FrameworkElement>();
 
         //用于平移的变量
@@ -30,26 +30,50 @@ namespace TreeChat.Views
 
         //选中节点
         public static readonly DependencyProperty SelectedNodeProperty =
-            DependencyProperty.Register("SelectedNode", typeof(TreeNodeViewModel), typeof(TreeVisualizationView),
+            DependencyProperty.Register("SelectedNode", typeof(TreeNodeVM), typeof(TreeVisualizationView),
                 new PropertyMetadata(null, OnSelectedNodeChanged));
 
-        public TreeNodeViewModel SelectedNode
+        public TreeNodeVM SelectedNode
         {
-            get => (TreeNodeViewModel)GetValue(SelectedNodeProperty);
+            get => (TreeNodeVM)GetValue(SelectedNodeProperty);
             set => SetValue(SelectedNodeProperty, value);
-        }
-
-        private static void OnSelectedNodeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is TreeVisualizationView view && e.NewValue is TreeNodeViewModel node)
-            {
-                view.HighlightSelectedNode(node);
-            }
         }
 
         public TreeVisualizationView()
         {
             InitializeComponent();
+
+            DataContextChanged += TreeVisualizationView_DataContextChanged;
+        }
+
+        private void TreeVisualizationView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            // 取消旧VM的订阅
+            if (e.OldValue is TreeVisualizationVM oldVm)
+            {
+                oldVm.CanvasPropertyChanged -= RefreshView;
+            }
+
+            // 订阅新VM的事件
+            if (e.NewValue is TreeVisualizationVM newVm)
+            {
+                _vm = newVm;
+                newVm.CanvasPropertyChanged += RefreshView;
+            }
+        }
+
+        private static void OnSelectedNodeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is TreeVisualizationView view && e.NewValue is TreeNodeVM node)
+            {
+                // 同步到VM（双向绑定保障）
+                if (view._vm != null && view._vm.SelectedNode != node)
+                {
+                    view._vm.SelectedNode = node;
+                }
+                // 本地高亮
+                view.HighlightSelectedNode(node);
+            }
         }
 
         // 鼠标拖动平移功能
@@ -136,34 +160,24 @@ namespace TreeChat.Views
             }
         }
 
-        public void SetTree(ChatTree chatTree, TreeNodeViewModel rootViewModel)
-        {
-            _chatTree = chatTree;
-            _rootViewModel = rootViewModel;
-            RenderTree();
-        }
-
-        public void RefreshView()
+        private void RefreshView()
         {
             RenderTree();
         }
 
         private void RenderTree()
         {
-            if (_chatTree == null || _rootViewModel == null || treeCanvas == null)
+            if(treeCanvas == null || _vm == null || _vm.RootNode == null)
                 return;
 
             treeCanvas.Children.Clear();
             _nodeElements.Clear();
 
-            // 计算所有节点位置
-            TreeLayoutService.LayoutTree(_rootViewModel);
-
             // 先绘制连接线（在节点下方）
-            DrawConnections(_rootViewModel);
+            DrawConnections(_vm.RootNode);
 
             // 再绘制节点
-            DrawNodes(_rootViewModel);
+            DrawNodes(_vm.RootNode);
 
             // 设置画布大小
             double maxWidth = _nodeElements.Values
@@ -178,19 +192,19 @@ namespace TreeChat.Views
             treeCanvas.Height = maxHeight + 100;
         }
 
-        private void DrawConnections(TreeNodeViewModel node)
+        private void DrawConnections(TreeNodeVM rootNode)
         {
-            if (node.Children.Count == 0)
+            if (rootNode.Children.Count == 0)
                 return;
 
             // 父节点底部中心点
-            double parentCenterX = node.X + TreeNodeViewModel.WIDTH / 2;
-            double parentBottomY = node.Y + TreeNodeViewModel.HEIGHT;
+            double parentCenterX = rootNode.X + TreeNodeVM.WIDTH / 2;
+            double parentBottomY = rootNode.Y + TreeNodeVM.HEIGHT;
 
-            foreach (var child in node.Children)
+            foreach (var child in rootNode.Children)
             {
                 // 子节点顶部中心点
-                double childCenterX = child.X + TreeNodeViewModel.WIDTH / 2;
+                double childCenterX = child.X + TreeNodeVM.WIDTH / 2;
                 double childTopY = child.Y;
 
                 // 绘制连接线
@@ -210,13 +224,13 @@ namespace TreeChat.Views
             }
         }
 
-        private void DrawNodes(TreeNodeViewModel node)
+        private void DrawNodes(TreeNodeVM rootNode)
         {
             // 创建节点UI
             var nodeBorder = new Border
             {
-                Width = TreeNodeViewModel.WIDTH,
-                Height = TreeNodeViewModel.HEIGHT,
+                Width = TreeNodeVM.WIDTH,
+                Height = TreeNodeVM.HEIGHT,
                 Background = new SolidColorBrush(Color.FromRgb(220, 230, 240)),
                 BorderBrush = Brushes.Gray,
                 BorderThickness = new Thickness(1),
@@ -227,7 +241,7 @@ namespace TreeChat.Views
             // 节点内容
             var textBlock = new TextBlock
             {
-                Text = node.DisplayContent,
+                Text = rootNode.DisplayContent,
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -236,7 +250,7 @@ namespace TreeChat.Views
             nodeBorder.Child = textBlock;
 
             // 为节点添加点击事件
-            var currentNode = node; // 保存当前节点引用，避免闭包问题
+            var currentNode = rootNode; // 保存当前节点引用，避免闭包问题
             nodeBorder.PreviewMouseLeftButtonDown += (s, e) =>
             {
                 SelectedNode = currentNode; // 触发选中逻辑
@@ -244,21 +258,21 @@ namespace TreeChat.Views
             };
 
             // 定位节点
-            Canvas.SetLeft(nodeBorder, node.X);
-            Canvas.SetTop(nodeBorder, node.Y);
+            Canvas.SetLeft(nodeBorder, rootNode.X);
+            Canvas.SetTop(nodeBorder, rootNode.Y);
 
             // 添加到画布
             treeCanvas.Children.Add(nodeBorder);
-            _nodeElements[node.ID] = nodeBorder;
+            _nodeElements[rootNode.ID] = nodeBorder;
 
             // 递归处理子节点
-            foreach (var child in node.Children)
+            foreach (var child in rootNode.Children)
             {
                 DrawNodes(child);
             }
         }
 
-        private void HighlightSelectedNode(TreeNodeViewModel node)
+        private void HighlightSelectedNode(TreeNodeVM node)
         {
             // 重置所有节点的边框
             foreach (var element in _nodeElements.Values)

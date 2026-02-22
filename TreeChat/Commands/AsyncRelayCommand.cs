@@ -3,12 +3,12 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace TreeChat.ViewModels
+namespace TreeChat.Commands
 {
     public class AsyncRelayCommand : ICommand
     {
         private readonly Func<object?, Task> _execute;
-        private readonly Func<object?, bool> _canExecute;
+        private readonly Func<object?, bool>? _canExecute;
         private bool _isExecuting;
 
         public event EventHandler? CanExecuteChanged;

@@ -13,15 +13,15 @@ namespace TreeChat.Services
         private const double HorizontalSpacing = 40;
         private const double VerticalSpacing = 60;
 
-        private static double CalculateWidthOfSubtree(TreeNodeViewModel currentNode)
+        private static double CalculateWidthOfSubtree(TreeNodeVM currentNode)
         {
             currentNode.SubtreeWidth.Clear();
 
             if (currentNode.Children.Count == 0)
-                return TreeNodeViewModel.WIDTH;
+                return TreeNodeVM.WIDTH;
 
             double totalWidth = 0;
-            foreach (TreeNodeViewModel childNode in currentNode.Children)
+            foreach (TreeNodeVM childNode in currentNode.Children)
             {
                 double subWidth = CalculateWidthOfSubtree(childNode);
                 currentNode.SubtreeWidth.Add(subWidth);
@@ -31,13 +31,13 @@ namespace TreeChat.Services
             return totalWidth;
         }
 
-        private static void UpdateWidthOfTree(TreeNodeViewModel updateNode)
+        private static void UpdateWidthOfTree(TreeNodeVM updateNode)
         {
             updateNode.SubtreeWidth.Clear();
             double totalWidth = CalculateWidthOfSubtree(updateNode);
 
-            TreeNodeViewModel currentNode = updateNode;
-            TreeNodeViewModel? parentNode = currentNode.ParentNode;
+            TreeNodeVM currentNode = updateNode;
+            TreeNodeVM? parentNode = currentNode.ParentNode;
             while (parentNode != null)
             {
                 int index = parentNode.Children.IndexOf(currentNode);
@@ -51,7 +51,7 @@ namespace TreeChat.Services
             }
         }
 
-        private static void CalculatePositionOfSubtreeRoot(TreeNodeViewModel rootViewModel, double x, double y)
+        private static void CalculatePositionOfSubtreeRoot(TreeNodeVM rootViewModel, double x, double y)
         {
             rootViewModel.Y = y;
             if (rootViewModel.SubtreeWidth.Count == 0)
@@ -64,25 +64,25 @@ namespace TreeChat.Services
             foreach (double childWidth in rootViewModel.SubtreeWidth)
                 totalWidth += childWidth + HorizontalSpacing;
             totalWidth -= HorizontalSpacing;
-            rootViewModel.X = x + totalWidth / 2 - TreeNodeViewModel.WIDTH / 2;
+            rootViewModel.X = x + totalWidth / 2 - TreeNodeVM.WIDTH / 2;
         }
 
-        public static void LayoutTree(TreeNodeViewModel rootNode)
+        public static void LayoutTree(TreeNodeVM rootNode)
         {
             CalculateWidthOfSubtree(rootNode);
             LayoutSubtree(rootNode, 0, 0);
         }
 
-        public static void UpdateLayoutTree(TreeNodeViewModel updateNode)
+        public static void UpdateLayoutTree(TreeNodeVM updateNode)
         {
             UpdateWidthOfTree(updateNode);
-            TreeNodeViewModel currentNode = updateNode;
+            TreeNodeVM currentNode = updateNode;
             while (currentNode.ParentNode != null)
                 currentNode = currentNode.ParentNode;
             LayoutSubtree(currentNode, 0, 0);
         }
 
-        private static void LayoutSubtree(TreeNodeViewModel currentNode, double x, double y)
+        private static void LayoutSubtree(TreeNodeVM currentNode, double x, double y)
         {
             CalculatePositionOfSubtreeRoot(currentNode, x, y);
             double offsetX = 0;

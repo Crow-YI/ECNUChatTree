@@ -19,10 +19,12 @@ namespace TreeChat.ViewModels
 
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
-            if(field != null && field.Equals(value))
+            // 正确的相等性判断：处理null、值类型、引用类型
+            if (EqualityComparer<T>.Default.Equals(field, value))
                 return false;
+
             field = value;
-            OnPropertyChanged(propertyName);
+            OnPropertyChanged(propertyName); // 触发属性变更通知
             return true;
         }
     }
