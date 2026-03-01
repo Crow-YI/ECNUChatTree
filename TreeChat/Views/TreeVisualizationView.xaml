@@ -14,7 +14,7 @@
                   MouseMove="ScrollViewer_MouseMove"
                   MouseLeftButtonUp="ScrollViewer_MouseLeftButtonUp">
         <Canvas x:Name="treeCanvas" 
-                Background="Wheat">
+                Background="Transparent">
             <!-- 树节点和连接线将在此处绘制 -->
         </Canvas>
     </ScrollViewer>
