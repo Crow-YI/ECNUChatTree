@@ -8,6 +8,9 @@ using TreeChat.ViewModels;
 
 namespace TreeChat.Services
 {
+    /// <summary>
+    /// 绘制树形结构的布局服务类
+    /// </summary>
     public static class TreeLayoutService
     {
         private const double HorizontalSpacing = 40;
@@ -67,12 +70,20 @@ namespace TreeChat.Services
             rootViewModel.X = x + totalWidth / 2 - TreeNodeVM.WIDTH / 2;
         }
 
+        /// <summary>
+        /// 初始化树形结构的布局，计算每个节点的位置
+        /// </summary>
+        /// <param name="rootNode"></param>
         public static void LayoutTree(TreeNodeVM rootNode)
         {
             CalculateWidthOfSubtree(rootNode);
             LayoutSubtree(rootNode, 0, 0);
         }
 
+        /// <summary>
+        /// 更新树形结构的布局，传入修改节点的父节点，重新计算布局，节省计算资源
+        /// </summary>
+        /// <param name="updateNode"></param>
         public static void UpdateLayoutTree(TreeNodeVM updateNode)
         {
             UpdateWidthOfTree(updateNode);

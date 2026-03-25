@@ -10,6 +10,9 @@ using TreeChat.Services;
 
 namespace TreeChat.ViewModels
 {
+    /// <summary>
+    /// 主窗口VM
+    /// </summary>
     public class MainWindowVM : BaseViewModel
     {
         public ChatManagementPanelVM ChatManagementPanelVM { get; set; }

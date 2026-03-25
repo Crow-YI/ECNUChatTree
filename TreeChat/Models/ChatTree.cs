@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TreeChat.Models
+﻿namespace TreeChat.Models
 {
+    /// <summary>
+    /// 聊天树结构，包含根节点和当前节点等信息
+    /// </summary>
     public class ChatTree
     {
         public ChatTreeNode RootNode { get; }

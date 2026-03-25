@@ -9,6 +9,9 @@ using TreeChat.Models;
 
 namespace TreeChat.ViewModels
 {
+    /// <summary>
+    /// 节点VM，包含节点数据和绘图属性
+    /// </summary>
     public class TreeNodeVM : BaseViewModel
     {
         //绘图属性
@@ -29,6 +32,7 @@ namespace TreeChat.ViewModels
         public TreeNodeVM? ParentNode { get; }
 
         private readonly ObservableCollection<TreeNodeVM> _children;
+
         public ReadOnlyObservableCollection<TreeNodeVM> Children { get; }
 
         public TreeNodeVM(ChatTreeNode node, TreeNodeVM? parentNode)
@@ -45,6 +49,11 @@ namespace TreeChat.ViewModels
             ParentNode = parentNode;
         }
 
+        /// <summary>
+        /// 添加子节点，并返回对应的子节点VM
+        /// </summary>
+        /// <param name="childNode"></param>
+        /// <returns></returns>
         public TreeNodeVM AddChild(ChatTreeNode childNode)
         {
             Node.ChildNodes.Add(childNode);

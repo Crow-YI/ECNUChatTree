@@ -1,5 +1,8 @@
 ﻿namespace TreeChat.Models
 {
+    /// <summary>
+    /// 聊天树节点，包含用户消息、AI回复、父节点和子节点等信息
+    /// </summary>
     public class ChatTreeNode
     {
         public ChatTreeNode? ParentNode { get; }
@@ -17,6 +20,10 @@
             NodeID = _nextNodeID++;
         }
 
+        /// <summary>
+        /// 得到完整上下文，包括从根节点到当前节点的所有用户消息和AI回复，按照时间顺序排列
+        /// </summary>
+        /// <returns></returns>
         public List<ChatMessage> GetFullContext()
         {
             var context = new List<ChatMessage>();
@@ -37,6 +44,11 @@
             return context;
         }
 
+        /// <summary>
+        /// 添加一个新的子节点，包含用户消息，并返回新创建的子节点
+        /// </summary>
+        /// <param name="userMessage"></param>
+        /// <returns></returns>
         public ChatTreeNode AddChildNode(ChatMessage userMessage)
         {
             var childNode = new ChatTreeNode(this, userMessage);
@@ -44,6 +56,10 @@
             return childNode;
         }
 
+        /// <summary>
+        /// 设置AI回复消息
+        /// </summary>
+        /// <param name="replyMessage"></param>
         public void SetAiReply(ChatMessage replyMessage)
         {
             ReplyMessage = replyMessage;

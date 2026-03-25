@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace TreeChat.ViewModels
 {
+    /// <summary>
+    /// VM基类
+    /// </summary>
     public class BaseViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;

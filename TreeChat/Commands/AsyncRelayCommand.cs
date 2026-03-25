@@ -5,6 +5,9 @@ using System.Windows.Input;
 
 namespace TreeChat.Commands
 {
+    /// <summary>
+    /// 并发命令基类
+    /// </summary>
     public class AsyncRelayCommand : ICommand
     {
         private readonly Func<object?, Task> _execute;

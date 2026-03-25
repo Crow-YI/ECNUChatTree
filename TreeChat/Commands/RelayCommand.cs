@@ -8,6 +8,9 @@ using System.Windows.Input;
 
 namespace TreeChat.Commands
 {
+    /// <summary>
+    /// 通用命令基类
+    /// </summary>
     public class RelayCommand : ICommand
     {
         private readonly Action<object?> _execute;

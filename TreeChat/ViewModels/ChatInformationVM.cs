@@ -11,6 +11,9 @@ using TreeChat.Views;
 
 namespace TreeChat.ViewModels
 {
+    /// <summary>
+    /// 节点信息VM
+    /// </summary>
     public class ChatInformationVM : BaseViewModel
     {
         private string? _userMessage;
@@ -75,7 +78,6 @@ namespace TreeChat.ViewModels
 
         private async Task ExecuteSendMessageAsync(object? parameter)
         {
-            // 边界校验：空输入/未选中节点直接返回
             if (string.IsNullOrWhiteSpace(InputMessage) || SelectedNode == null) return;
 
             try

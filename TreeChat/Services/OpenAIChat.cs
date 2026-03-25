@@ -1,15 +1,14 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
 using TreeChat.Models;
 
 namespace TreeChat.Services
 {
+    /// <summary>
+    /// 提供与大模型服务器交互的服务类
+    /// </summary>
     public class OpenAIChat
     {
         private readonly HttpClient _httpClient;
