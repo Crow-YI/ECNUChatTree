@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -32,6 +32,14 @@ namespace TreeChat.Commands
         public void Execute(object? parameter)
         {
             _execute(parameter);
+        }
+
+        /// <summary>
+        /// 手动触发CanExecuteChanged事件
+        /// </summary>
+        public void OnCanExecuteChanged()
+        {
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

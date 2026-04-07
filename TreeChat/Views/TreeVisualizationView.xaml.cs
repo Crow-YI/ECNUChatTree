@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,6 +18,11 @@ namespace TreeChat.Views
         private TreeVisualizationVM? _vm;
 
         private Dictionary<int, FrameworkElement> _nodeElements = new Dictionary<int, FrameworkElement>();
+
+        /// <summary>
+        /// 文件拖放事件，参数为文件路径
+        /// </summary>
+        public event Action<string>? FileDropped;
 
         //用于平移的变量
         private Point _lastMousePosition;
@@ -308,6 +313,46 @@ namespace TreeChat.Views
                 clickedElement = VisualTreeHelper.GetParent(clickedElement);
             }
             return false;
+        }
+
+        // 文件拖放处理
+        private void ScrollViewer_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        private void ScrollViewer_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        private void ScrollViewer_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    FileDropped?.Invoke(files[0]);
+                }
+            }
+            e.Handled = true;
         }
     }
 }
