@@ -59,6 +59,13 @@ namespace TreeChat.ViewModels
             }
         }
 
+        private ChatTree? _currentChatTree;
+        public ChatTree? CurrentChatTree
+        {
+            get => _currentChatTree;
+            set => SetProperty(ref _currentChatTree, value);
+        }
+
         public event Action<TreeNodeVM, TreeNodeVM>? ChatTreeChanged;
 
         public ChatInformationVM()
@@ -73,12 +80,12 @@ namespace TreeChat.ViewModels
 
         private bool CanExecuteSendMessage(object? parameter)
         {
-            return !string.IsNullOrEmpty(InputMessage) && SelectedNode != null;
+            return !string.IsNullOrEmpty(InputMessage) && SelectedNode != null && CurrentChatTree != null;
         }
 
         private async Task ExecuteSendMessageAsync(object? parameter)
         {
-            if (string.IsNullOrWhiteSpace(InputMessage) || SelectedNode == null) return;
+            if (string.IsNullOrWhiteSpace(InputMessage) || SelectedNode == null || CurrentChatTree == null) return;
 
             try
             {
@@ -89,7 +96,7 @@ namespace TreeChat.ViewModels
 
                 InputMessage = string.Empty;
 
-                string aiReply = await OpenAIChat.Instance.CallAiApi(SelectedNode.Node.GetFullContext());
+                string aiReply = await OpenAIChat.Instance.CallAiApi(SelectedNode.Node.GetFullContext(), CurrentChatTree);
 
                 SelectedNode.Node.SetAiReply(new ChatMessage("assistant", aiReply));
                 AIReply = aiReply;

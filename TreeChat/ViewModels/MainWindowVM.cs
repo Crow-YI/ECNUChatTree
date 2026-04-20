@@ -39,7 +39,9 @@ namespace TreeChat.ViewModels
         // 直接创建根节点 VM，TreeNodeVM 构造函数会自动递归创建所有子节点
         TreeNodeVM rootNodeVM = new TreeNodeVM(tree.RootNode, null);
         TreeVisualizationVM.SetTree(rootNodeVM);
+        // 传递当前ChatTree给ChatInformationVM和TreeVisualizationVM
+        ChatInformationVM.CurrentChatTree = tree;
+        TreeVisualizationVM.CurrentChatTree = tree;
     }
     }
 }
-

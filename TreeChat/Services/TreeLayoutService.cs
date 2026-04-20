@@ -21,7 +21,7 @@ namespace TreeChat.Services
             currentNode.SubtreeWidth.Clear();
 
             if (currentNode.Children.Count == 0)
-                return TreeNodeVM.WIDTH;
+                return 60; // 使用一个合理的默认宽度
 
             double totalWidth = 0;
             foreach (TreeNodeVM childNode in currentNode.Children)
@@ -67,7 +67,7 @@ namespace TreeChat.Services
             foreach (double childWidth in rootViewModel.SubtreeWidth)
                 totalWidth += childWidth + HorizontalSpacing;
             totalWidth -= HorizontalSpacing;
-            rootViewModel.X = x + totalWidth / 2 - TreeNodeVM.WIDTH / 2;
+            rootViewModel.X = x + totalWidth / 2 - 30; // 使用30作为默认宽度的一半
         }
 
         /// <summary>

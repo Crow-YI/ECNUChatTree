@@ -23,7 +23,7 @@ namespace TreeChat.ViewModels
 
         public List<double> SubtreeWidth { get; set; } = new List<double>();
 
-        public string DisplayContent => Node.NodeID.ToString();
+        public string DisplayContent => Node.Name ?? Node.NodeID.ToString();
 
         public ChatTreeNode Node { get; }
 

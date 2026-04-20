@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TreeChat.Services;
 
 namespace TreeChat.Models
 {
@@ -54,15 +55,53 @@ namespace TreeChat.Models
         }
 
         /// <summary>
+        /// API Key
+        /// </summary>
+        public string ApiKey { get; set; }
+
+        /// <summary>
+        /// API 端点
+        /// </summary>
+        public string ApiEndpoint { get; set; }
+
+        /// <summary>
+        /// 模型名称
+        /// </summary>
+        public string ModelName { get; set; }
+
+        /// <summary>
+        /// 温度参数
+        /// </summary>
+        public double Temperature { get; set; }
+
+        /// <summary>
+        /// Top P 参数
+        /// </summary>
+        public double TopP { get; set; }
+
+        /// <summary>
+        /// Top K 参数
+        /// </summary>
+        public int TopK { get; set; }
+
+        /// <summary>
         /// 无参构造函数，用于JSON反序列化
         /// </summary>
         public ChatTree()
         {
             RootNode = new ChatTreeNode(null, new ChatMessage("system", "你是一个有帮助的AI助手。"));
             CurrentNode = RootNode;
+            
+            // 设置默认配置
+            ApiKey = ApiConfig.ApiKey;
+            ApiEndpoint = ApiConfig.ApiEndpoint;
+            ModelName = ApiConfig.ModelName;
+            Temperature = ApiConfig.Temperature;
+            TopP = ApiConfig.TopP;
+            TopK = ApiConfig.TopK;
         }
 
-        public ChatTree(string? systemPrompt = null)
+        public ChatTree(string? systemPrompt = null, string? apiKey = null, string? apiEndpoint = null, string? modelName = null, double? temperature = null, double? topP = null, int? topK = null)
         {
             if (!string.IsNullOrWhiteSpace(systemPrompt))
             {
@@ -73,6 +112,14 @@ namespace TreeChat.Models
                 RootNode = new ChatTreeNode(null, new ChatMessage("system", "你是一个有帮助的AI助手。"));
             }
             CurrentNode = RootNode;
+            
+            // 设置配置，使用传入的值或默认值
+            ApiKey = apiKey ?? ApiConfig.ApiKey;
+            ApiEndpoint = apiEndpoint ?? ApiConfig.ApiEndpoint;
+            ModelName = modelName ?? ApiConfig.ModelName;
+            Temperature = temperature ?? ApiConfig.Temperature;
+            TopP = topP ?? ApiConfig.TopP;
+            TopK = topK ?? ApiConfig.TopK;
         }
 
         /// <summary>

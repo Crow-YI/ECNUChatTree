@@ -10,6 +10,7 @@ namespace TreeChat.Models
         public ChatMessage UserMessage { get; }
         public ChatMessage? ReplyMessage { get; private set; }
         public int NodeID { get; }
+        public string? Name { get; set; }
 
         private static int _nextNodeID = 1;
 

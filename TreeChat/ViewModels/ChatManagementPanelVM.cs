@@ -89,9 +89,22 @@ namespace TreeChat.ViewModels
         /// </summary>
         private void ExecuteCreateNewChat(object? parameter)
         {
-            ChatTree newTree = new ChatTree();
-            ChatList.Add(newTree);
-            SelectedChat = newTree;
+            // 显示配置窗口
+            var configDialog = new Views.ConfigDialog();
+            if (configDialog.ShowDialog() == true)
+            {
+                // 使用用户配置创建新对话
+                ChatTree newTree = new ChatTree(
+                    apiKey: configDialog.ApiKey,
+                    apiEndpoint: configDialog.ApiEndpoint,
+                    modelName: configDialog.ModelName,
+                    temperature: configDialog.Temperature,
+                    topP: configDialog.TopP,
+                    topK: configDialog.TopK
+                );
+                ChatList.Add(newTree);
+                SelectedChat = newTree;
+            }
         }
 
         /// <summary>
