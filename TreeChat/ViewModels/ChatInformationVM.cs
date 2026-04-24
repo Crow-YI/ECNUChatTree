@@ -89,6 +89,14 @@ namespace TreeChat.ViewModels
 
             try
             {
+                // 检查API Key是否有效
+                if (string.IsNullOrWhiteSpace(CurrentChatTree.ApiKey))
+                {
+                    MessageBox.Show("请更改有效的APIKey值！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 先创建新节点
                 ChatTreeNode newNode = new ChatTreeNode(SelectedNode.Node, new ChatMessage("user", InputMessage));
                 TreeNodeVM newNodeVM = SelectedNode.AddChild(newNode);
                 ChatTreeChanged?.Invoke(SelectedNode, newNodeVM);
@@ -96,14 +104,36 @@ namespace TreeChat.ViewModels
 
                 InputMessage = string.Empty;
 
+                // 调用API
                 string aiReply = await OpenAIChat.Instance.CallAiApi(SelectedNode.Node.GetFullContext(), CurrentChatTree);
 
+                // 设置AI回复
                 SelectedNode.Node.SetAiReply(new ChatMessage("assistant", aiReply));
                 AIReply = aiReply;
             }
             catch (Exception ex)
             {
-                AIReply = $"请求失败：{ex.Message}";
+                // 检查是否是API Key导致的失败
+                if (ex.Message.Contains("401") || ex.Message.Contains("Unauthorized") || ex.Message.Contains("API Key"))
+                {
+                    // 如果是API Key错误，移除刚创建的节点
+                    if (SelectedNode != null && SelectedNode.ParentNode != null)
+                    {
+                        var parentNode = SelectedNode.ParentNode;
+                        parentNode.RemoveChild(SelectedNode);
+                        SelectedNode = parentNode;
+                        ChatTreeChanged?.Invoke(SelectedNode, null);
+                    }
+                    
+                    // 显示错误信息
+                    MessageBox.Show("请更改有效的APIKey值！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AIReply = "";
+                }
+                else
+                {
+                    // 其他错误，显示错误信息但保留节点
+                    AIReply = $"API调用失败：{ex.Message}";
+                }
             }
         }
     }

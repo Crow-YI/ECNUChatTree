@@ -13,7 +13,7 @@
         
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
             <Button x:Name="ConfigButton"
-                    Content="查看配置"
+                    Content="更改配置"
                     Command="{Binding ShowConfigCommand}"
                     Margin="0,0,10,0"
                     Padding="10,5"

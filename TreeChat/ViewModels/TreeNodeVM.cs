@@ -62,5 +62,15 @@ namespace TreeChat.ViewModels
             return childViewModel;
         }
 
+        /// <summary>
+        /// 移除子节点
+        /// </summary>
+        /// <param name="childNode"></param>
+        public void RemoveChild(TreeNodeVM childNode)
+        {
+            Node.ChildNodes.Remove(childNode.Node);
+            _children.Remove(childNode);
+        }
+
     }
 }

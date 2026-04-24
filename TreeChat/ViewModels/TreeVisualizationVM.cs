@@ -71,6 +71,11 @@ namespace TreeChat.ViewModels
                 if (!string.IsNullOrWhiteSpace(newName))
                 {
                     SelectedNode.Node.Name = newName;
+                    // 重新计算整个树的布局
+                    if (RootNode != null)
+                    {
+                        TreeLayoutService.LayoutTree(RootNode);
+                    }
                     // 通知UI更新
                     OnPropertyChanged(nameof(SelectedNode));
                     CanvasPropertyChanged?.Invoke();
@@ -86,14 +91,25 @@ namespace TreeChat.ViewModels
                 return;
             }
 
-            string configInfo = $"API Key: {CurrentChatTree.ApiKey}\n" +
-                               $"API 端口: {CurrentChatTree.ApiEndpoint}\n" +
-                               $"模型名称: {CurrentChatTree.ModelName}\n" +
-                               $"随机性: {CurrentChatTree.Temperature:F1}\n" +
-                               $"核采样: {CurrentChatTree.TopP:F1}\n" +
-                               $"候选词数量: {CurrentChatTree.TopK}";
+            var dialog = new Views.ConfigDialog();
+            // 设置当前配置值
+            dialog.ApiKey = CurrentChatTree.ApiKey;
+            dialog.ApiEndpoint = CurrentChatTree.ApiEndpoint;
+            dialog.ModelName = CurrentChatTree.ModelName;
+            dialog.Temperature = CurrentChatTree.Temperature;
+            dialog.TopP = CurrentChatTree.TopP;
+            dialog.TopK = CurrentChatTree.TopK;
 
-            MessageBox.Show(configInfo, "当前对话配置", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (dialog.ShowDialog() == true)
+            {
+                // 保存新的配置值
+                CurrentChatTree.ApiKey = dialog.ApiKey;
+                CurrentChatTree.ApiEndpoint = dialog.ApiEndpoint;
+                CurrentChatTree.ModelName = dialog.ModelName;
+                CurrentChatTree.Temperature = dialog.Temperature;
+                CurrentChatTree.TopP = dialog.TopP;
+                CurrentChatTree.TopK = dialog.TopK;
+            }
         }
 
         public void SetTree(TreeNodeVM rootNode)
