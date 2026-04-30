@@ -51,6 +51,19 @@ namespace TreeChat.Models
         }
 
         /// <summary>
+        /// 当且仅当传入的节点 ID 是“最近一次分配的 ID”时，回退一次自增计数器。
+        /// 用于“创建节点后立刻撤回/删除”的场景，避免出现 ID 跳号。
+        /// </summary>
+        /// <param name="nodeId">被撤回（删除）的节点 ID</param>
+        public static void RollbackNextNodeIdIfLastAllocated(int nodeId)
+        {
+            if (nodeId == _nextNodeID - 1)
+            {
+                _nextNodeID--;
+            }
+        }
+
+        /// <summary>
         /// 得到完整上下文，包括从根节点到当前节点的所有用户消息和AI回复，按照时间顺序排列
         /// </summary>
         /// <returns></returns>

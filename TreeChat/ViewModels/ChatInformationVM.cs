@@ -87,6 +87,12 @@ namespace TreeChat.ViewModels
         {
             if (string.IsNullOrWhiteSpace(InputMessage) || SelectedNode == null || CurrentChatTree == null) return;
 
+            // 记录发送前的状态，便于失败后回滚
+            // 这里 SelectedNode 在上方已判空，因此使用 null-forgiving 以消除静态分析警告
+            TreeNodeVM previousNode = SelectedNode!;
+            string messageToSend = InputMessage;
+            int? createdNodeId = null;
+
             try
             {
                 // 检查API Key是否有效
@@ -97,9 +103,10 @@ namespace TreeChat.ViewModels
                 }
 
                 // 先创建新节点
-                ChatTreeNode newNode = new ChatTreeNode(SelectedNode.Node, new ChatMessage("user", InputMessage));
-                TreeNodeVM newNodeVM = SelectedNode.AddChild(newNode);
-                ChatTreeChanged?.Invoke(SelectedNode, newNodeVM);
+                ChatTreeNode newNode = new ChatTreeNode(previousNode.Node, new ChatMessage("user", messageToSend));
+                createdNodeId = newNode.NodeID;
+                TreeNodeVM newNodeVM = previousNode.AddChild(newNode);
+                ChatTreeChanged?.Invoke(previousNode, newNodeVM);
                 SelectedNode = newNodeVM;
 
                 InputMessage = string.Empty;
@@ -118,12 +125,35 @@ namespace TreeChat.ViewModels
                 // 失败：弹窗提示，不写入节点回复
                 string userPrompt = GetUserFriendlyErrorPrompt(result);
                 MessageBox.Show(userPrompt, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                AIReply = string.Empty;
+
+                // 点“确定”后回滚：移除本次新增节点，退回上一个节点，并恢复输入框内容
+                if (createdNodeId.HasValue)
+                {
+                    ChatTreeNode.RollbackNextNodeIdIfLastAllocated(createdNodeId.Value);
+                }
+                previousNode.RemoveChild(newNodeVM);
+                SelectedNode = previousNode;
+                InputMessage = messageToSend;
+                AIReply = previousNode.Node.ReplyMessage?.Content;
+                ChatTreeChanged?.Invoke(previousNode, previousNode);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"请求过程中发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                AIReply = string.Empty;
+
+                // 异常同样回滚到发送前状态（不污染树节点）
+                if (SelectedNode != null && SelectedNode != previousNode)
+                {
+                    if (createdNodeId.HasValue)
+                    {
+                        ChatTreeNode.RollbackNextNodeIdIfLastAllocated(createdNodeId.Value);
+                    }
+                    previousNode.RemoveChild(SelectedNode);
+                    SelectedNode = previousNode;
+                }
+                InputMessage = messageToSend;
+                AIReply = previousNode.Node.ReplyMessage?.Content;
+                ChatTreeChanged?.Invoke(previousNode, previousNode);
             }
         }
 
