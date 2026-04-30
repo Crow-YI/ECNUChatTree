@@ -105,60 +105,36 @@ namespace TreeChat.ViewModels
                 InputMessage = string.Empty;
 
                 // 调用API
-                AiCallResult result = await OpenAIChat.Instance.CallAiApi(SelectedNode.Node.GetFullContext(), CurrentChatTree);
+                string aiReply = await OpenAIChat.Instance.CallAiApi(SelectedNode.Node.GetFullContext(), CurrentChatTree);
 
-                if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.Content))
-                {
-                    // 设置 AI 回复（仅成功时写入树节点，避免错误信息污染上下文）
-                    SelectedNode.Node.SetAiReply(new ChatMessage("assistant", result.Content));
-                    AIReply = result.Content;
-                    return;
-                }
-
-                // 失败：弹窗提示，不写入节点回复
-                string userPrompt = GetUserFriendlyErrorPrompt(result);
-                MessageBox.Show(userPrompt, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                AIReply = string.Empty;
+                // 设置AI回复
+                SelectedNode.Node.SetAiReply(new ChatMessage("assistant", aiReply));
+                AIReply = aiReply;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"请求过程中发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                AIReply = string.Empty;
+                // 检查是否是API Key导致的失败
+                if (ex.Message.Contains("401") || ex.Message.Contains("Unauthorized") || ex.Message.Contains("API Key"))
+                {
+                    // 如果是API Key错误，移除刚创建的节点
+                    if (SelectedNode != null && SelectedNode.ParentNode != null)
+                    {
+                        var parentNode = SelectedNode.ParentNode;
+                        parentNode.RemoveChild(SelectedNode);
+                        SelectedNode = parentNode;
+                        ChatTreeChanged?.Invoke(SelectedNode, null);
+                    }
+                    
+                    // 显示错误信息
+                    MessageBox.Show("请更改有效的APIKey值！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AIReply = "";
+                }
+                else
+                {
+                    // 其他错误，显示错误信息但保留节点
+                    AIReply = $"API调用失败：{ex.Message}";
+                }
             }
-        }
-
-        /// <summary>
-        /// 将接口错误结果映射为用户可读中文提示
-        /// </summary>
-        /// <param name="result">AI 调用结果</param>
-        /// <returns>用于弹窗展示的中文提示</returns>
-        public static string GetUserFriendlyErrorPrompt(AiCallResult result)
-        {
-            // HTTP 错误码（文档）：401 / 403 / 422 / 429 / Other
-            // 客户端/网络类（非文档 HTTP 码）：Timeout / NetworkError / InvalidResponse / EmptyModelReply / ClientException
-            string header = result.ErrorKey switch
-            {
-                "401" => "令牌无效。",
-                "403" => "禁止访问。",
-                "422" => "请求体验证失败。",
-                "429" => "请求过于频繁。",
-                "Other" => "服务器返回了非文档约定的错误状态码。",
-                "Timeout" => "请求超时：长时间未收到服务器响应，请检查网络或稍后重试。",
-                "NetworkError" => "网络连接失败：无法访问服务器，请检查网络、VPN 或接口地址。",
-                "InvalidResponse" => "服务器返回了无法解析的响应（可能不是预期的 JSON 格式）。",
-                "EmptyModelReply" => "服务器已响应，但模型返回内容为空。",
-                "ClientException" => "客户端处理响应时出错。",
-                _ => "发生未知错误。"
-            };
-
-            // 将 detail 作为补充信息展示，方便定位问题
-            if (!string.IsNullOrWhiteSpace(result.ErrorDetail))
-                return $"{header}\n\n详情：{result.ErrorDetail}";
-
-            if (result.StatusCode != null)
-                return $"{header}\n\nHTTP 状态码：{(int)result.StatusCode}";
-
-            return header;
         }
     }
 }
