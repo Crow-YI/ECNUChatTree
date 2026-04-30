@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,24 +11,18 @@ namespace TreeChat.Services
     /// </summary>
     public class OpenAIChat
     {
-        private readonly HttpClient _httpClient;
-
         public static OpenAIChat Instance { get; private set; } = new OpenAIChat();
 
         public OpenAIChat()
         {
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", ApiConfig.ApiKey);
-            _httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         /// <summary>
-        /// 调用AI接口（传入上下文）
+        /// 调用AI接口（传入上下文和配置）
         /// </summary>
         /// <param name="context">完整上下文</param>
-        public async Task<string> CallAiApi(List<ChatMessage> context)
+        /// <param name="chatTree">对话树，包含配置信息</param>
+        public async Task<string> CallAiApi(List<ChatMessage> context, ChatTree chatTree)
         {
             List<OpenAIMessage> tempList = new List<OpenAIMessage>();
             foreach (ChatMessage message in context)
@@ -39,29 +33,38 @@ namespace TreeChat.Services
 
             try
             {
-                // 构造强类型请求体
-                var request = new ChatCompletionRequest
+                // 使用传入的配置
+                using (var httpClient = new HttpClient())
                 {
-                    model = ApiConfig.ModelName,
-                    temperature = ApiConfig.Temperature,
-                    top_p = ApiConfig.TopP,
-                    top_k = ApiConfig.TopK,
-                    messages = tempList
-                };
+                    httpClient.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", chatTree.ApiKey);
+                    httpClient.DefaultRequestHeaders.Accept.Add(
+                        new MediaTypeWithQualityHeaderValue("application/json"));
 
-                // 序列化强类型对象
-                var jsonContent = new StringContent(
-                    JsonConvert.SerializeObject(request),
-                    Encoding.UTF8,
-                    "application/json");
+                    // 构造强类型请求体
+                    var request = new ChatCompletionRequest
+                    {
+                        model = chatTree.ModelName,
+                        temperature = chatTree.Temperature,
+                        top_p = chatTree.TopP,
+                        top_k = chatTree.TopK,
+                        messages = tempList
+                    };
 
-                // 请求与解析返回内容
-                var response = await _httpClient.PostAsync(ApiConfig.ApiEndpoint, jsonContent);
-                response.EnsureSuccessStatusCode();
+                    // 序列化强类型对象
+                    var jsonContent = new StringContent(
+                        JsonConvert.SerializeObject(request),
+                        Encoding.UTF8,
+                        "application/json");
 
-                var responseJson = await response.Content.ReadAsStringAsync();
-                dynamic responseData = JsonConvert.DeserializeObject(responseJson);
-                return responseData.choices[0].message.content.ToString().Trim();
+                    // 请求与解析返回内容
+                    var response = await httpClient.PostAsync(chatTree.ApiEndpoint, jsonContent);
+                    response.EnsureSuccessStatusCode();
+
+                    var responseJson = await response.Content.ReadAsStringAsync();
+                    dynamic responseData = JsonConvert.DeserializeObject(responseJson);
+                    return responseData.choices[0].message.content.ToString().Trim();
+                }
             }
             catch (Exception ex)
             {

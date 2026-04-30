@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,6 +18,11 @@ namespace TreeChat.Views
         private TreeVisualizationVM? _vm;
 
         private Dictionary<int, FrameworkElement> _nodeElements = new Dictionary<int, FrameworkElement>();
+
+        /// <summary>
+        /// 文件拖放事件，参数为文件路径
+        /// </summary>
+        public event Action<string>? FileDropped;
 
         //用于平移的变量
         private Point _lastMousePosition;
@@ -226,18 +231,6 @@ namespace TreeChat.Views
 
         private void DrawNodes(TreeNodeVM rootNode)
         {
-            // 创建节点UI
-            var nodeBorder = new Border
-            {
-                Width = TreeNodeVM.WIDTH,
-                Height = TreeNodeVM.HEIGHT,
-                Background = new SolidColorBrush(Color.FromRgb(220, 230, 240)),
-                BorderBrush = Brushes.Gray,
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(3),
-                Cursor = Cursors.Hand
-            };
-
             // 节点内容
             var textBlock = new TextBlock
             {
@@ -247,6 +240,24 @@ namespace TreeChat.Views
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(5)
             };
+            
+            // 测量文本大小
+            textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var textWidth = textBlock.DesiredSize.Width;
+            var textHeight = textBlock.DesiredSize.Height;
+            
+            // 创建节点UI，根据文本大小调整宽度
+            var nodeBorder = new Border
+            {
+                Width = Math.Max(textWidth + 10, 40), // 最小宽度40
+                Height = Math.Max(textHeight + 10, 30), // 最小高度30
+                Background = new SolidColorBrush(Color.FromRgb(220, 230, 240)),
+                BorderBrush = Brushes.Gray,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(3),
+                Cursor = Cursors.Hand
+            };
+            
             nodeBorder.Child = textBlock;
 
             // 为节点添加点击事件
@@ -308,6 +319,46 @@ namespace TreeChat.Views
                 clickedElement = VisualTreeHelper.GetParent(clickedElement);
             }
             return false;
+        }
+
+        // 文件拖放处理
+        private void ScrollViewer_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        private void ScrollViewer_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        private void ScrollViewer_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files != null && files.Length > 0)
+                {
+                    FileDropped?.Invoke(files[0]);
+                }
+            }
+            e.Handled = true;
         }
     }
 }

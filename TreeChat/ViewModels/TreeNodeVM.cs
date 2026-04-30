@@ -23,7 +23,7 @@ namespace TreeChat.ViewModels
 
         public List<double> SubtreeWidth { get; set; } = new List<double>();
 
-        public string DisplayContent => Node.NodeID.ToString();
+        public string DisplayContent => Node.Name ?? Node.NodeID.ToString();
 
         public ChatTreeNode Node { get; }
 
@@ -60,6 +60,16 @@ namespace TreeChat.ViewModels
             var childViewModel = new TreeNodeVM(childNode, this);
             _children.Add(childViewModel);
             return childViewModel;
+        }
+
+        /// <summary>
+        /// 移除子节点
+        /// </summary>
+        /// <param name="childNode"></param>
+        public void RemoveChild(TreeNodeVM childNode)
+        {
+            Node.ChildNodes.Remove(childNode.Node);
+            _children.Remove(childNode);
         }
 
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -31,21 +31,17 @@ namespace TreeChat.ViewModels
             ChatInformationVM.ChatTreeChanged += TreeVisualizationVM.UpdateTree;
         }
 
-        private void ChangeNodeVMTree(ChatTree tree)
-        {
-            TreeNodeVM rootNodeVM = InitializeNodeVMTree(tree.RootNode, null);
-            TreeVisualizationVM.SetTree(rootNodeVM);
-        }
-
-        private TreeNodeVM InitializeNodeVMTree(ChatTreeNode currentNode, TreeNodeVM? parentVM)
-        {
-            TreeNodeVM currentVM = new TreeNodeVM(currentNode, parentVM);
-            foreach(ChatTreeNode node in currentNode.ChildNodes)
-            {
-                InitializeNodeVMTree(node, currentVM);
-            }
-            return currentVM;
-        }
+    /// <summary>
+    /// 当选中对话变更时，创建对应的节点 VM 树
+    /// </summary>
+    private void ChangeNodeVMTree(ChatTree tree)
+    {
+        // 直接创建根节点 VM，TreeNodeVM 构造函数会自动递归创建所有子节点
+        TreeNodeVM rootNodeVM = new TreeNodeVM(tree.RootNode, null);
+        TreeVisualizationVM.SetTree(rootNodeVM);
+        // 传递当前ChatTree给ChatInformationVM和TreeVisualizationVM
+        ChatInformationVM.CurrentChatTree = tree;
+        TreeVisualizationVM.CurrentChatTree = tree;
+    }
     }
 }
-

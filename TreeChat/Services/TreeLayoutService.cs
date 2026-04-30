@@ -13,15 +13,24 @@ namespace TreeChat.Services
     /// </summary>
     public static class TreeLayoutService
     {
-        private const double HorizontalSpacing = 40;
+        private const double HorizontalSpacing = 60;
         private const double VerticalSpacing = 60;
+        private const double MinNodeWidth = 80;
+        private const double CharWidth = 12;
+
+        private static double CalculateNodeWidth(TreeNodeVM node)
+        {
+            string nodeName = node.DisplayContent ?? "";
+            double width = nodeName.Length * CharWidth;
+            return Math.Max(width, MinNodeWidth);
+        }
 
         private static double CalculateWidthOfSubtree(TreeNodeVM currentNode)
         {
             currentNode.SubtreeWidth.Clear();
 
             if (currentNode.Children.Count == 0)
-                return TreeNodeVM.WIDTH;
+                return CalculateNodeWidth(currentNode);
 
             double totalWidth = 0;
             foreach (TreeNodeVM childNode in currentNode.Children)
@@ -31,7 +40,7 @@ namespace TreeChat.Services
                 totalWidth += subWidth + HorizontalSpacing;
             }
             totalWidth -= HorizontalSpacing;
-            return totalWidth;
+            return Math.Max(totalWidth, CalculateNodeWidth(currentNode));
         }
 
         private static void UpdateWidthOfTree(TreeNodeVM updateNode)
@@ -67,7 +76,7 @@ namespace TreeChat.Services
             foreach (double childWidth in rootViewModel.SubtreeWidth)
                 totalWidth += childWidth + HorizontalSpacing;
             totalWidth -= HorizontalSpacing;
-            rootViewModel.X = x + totalWidth / 2 - TreeNodeVM.WIDTH / 2;
+            rootViewModel.X = x + totalWidth / 2 - CalculateNodeWidth(rootViewModel) / 2;
         }
 
         /// <summary>
