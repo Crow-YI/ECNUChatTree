@@ -1,4 +1,6 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -22,7 +24,7 @@ namespace TreeChat.Services
         /// </summary>
         /// <param name="context">完整上下文</param>
         /// <param name="chatTree">对话树，包含配置信息</param>
-        public async Task<string> CallAiApi(List<ChatMessage> context, ChatTree chatTree)
+        public async Task<AiCallResult> CallAiApi(List<ChatMessage> context, ChatTree chatTree)
         {
             List<OpenAIMessage> tempList = new List<OpenAIMessage>();
             foreach (ChatMessage message in context)
@@ -58,17 +60,69 @@ namespace TreeChat.Services
                         "application/json");
 
                     // 请求与解析返回内容
-                    var response = await httpClient.PostAsync(chatTree.ApiEndpoint, jsonContent);
-                    response.EnsureSuccessStatusCode();
+                    HttpResponseMessage response;
+                    try
+                    {
+                        response = await httpClient.PostAsync(chatTree.ApiEndpoint, jsonContent);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        return AiCallResult.Fail("NetworkError", ex.Message, statusCode: null);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // 含 HttpClient 超时、DNS 慢等导致的取消
+                        return AiCallResult.Fail("Timeout", "请求超时或连接被取消。", statusCode: null);
+                    }
 
-                    var responseJson = await response.Content.ReadAsStringAsync();
-                    dynamic responseData = JsonConvert.DeserializeObject(responseJson);
-                    return responseData.choices[0].message.content.ToString().Trim();
+                    var responseText = await response.Content.ReadAsStringAsync();
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var (errorKey, detail) = OpenApiErrorParser.Parse(response.StatusCode, responseText);
+                        return AiCallResult.Fail(errorKey, detail, response.StatusCode);
+                    }
+
+                    var parseResult = TryParseAssistantContent(responseText);
+                    if (!parseResult.Ok)
+                        return AiCallResult.Fail("InvalidResponse", parseResult.Error, statusCode: response.StatusCode);
+
+                    if (string.IsNullOrWhiteSpace(parseResult.Content))
+                        return AiCallResult.Fail("EmptyModelReply", "模型返回了空内容。", response.StatusCode);
+
+                    return AiCallResult.Success(parseResult.Content!);
                 }
+            }
+            catch (TaskCanceledException)
+            {
+                return AiCallResult.Fail("Timeout", "请求超时或连接被取消。", statusCode: null);
+            }
+            catch (HttpRequestException ex)
+            {
+                return AiCallResult.Fail("NetworkError", ex.Message, statusCode: null);
             }
             catch (Exception ex)
             {
-                return $"API调用失败：{ex.Message}";
+                return AiCallResult.Fail("ClientException", ex.Message, statusCode: null);
+            }
+        }
+
+        private static (bool Ok, string? Content, string? Error) TryParseAssistantContent(string responseText)
+        {
+            if (string.IsNullOrWhiteSpace(responseText))
+                return (false, null, "响应体为空。");
+
+            try
+            {
+                var root = JToken.Parse(responseText);
+                var content = root.SelectToken("choices[0].message.content")?.ToString();
+                if (content == null)
+                    return (false, null, "响应 JSON 中缺少 choices[0].message.content 字段。");
+                return (true, content.Trim(), null);
+            }
+            catch (JsonException ex)
+            {
+                return (false, null, $"响应不是合法 JSON：{ex.Message}");
             }
         }
     }

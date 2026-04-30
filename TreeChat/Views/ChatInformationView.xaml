@@ -12,37 +12,43 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 上部分：信息展示区域 -->
-        <Border Grid.Row="0"
-            Background="White"
-            CornerRadius="4"
-            Padding="10">
-            <StackPanel VerticalAlignment="Top">
-                <!-- 第一条信息 -->
-                <StackPanel>
-                    <TextBlock Text="信息1" 
-                           FontSize="12" 
+<!-- 上部分：信息展示区域（可滚动完整阅读） -->
+<Border Grid.Row="0"
+        Background="White"
+        CornerRadius="4"
+        Padding="10">
+    <ScrollViewer x:Name="MessageScrollViewer"
+              VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Disabled">
+        <StackPanel VerticalAlignment="Top">
+            <!-- 第一条信息 -->
+            <StackPanel>
+                <TextBlock Text="提问"
+                           FontSize="12"
                            Foreground="#666666"
                            FontWeight="Bold"/>
-                    <TextBlock Text="{Binding UserMessage}" 
-                           FontSize="14" 
-                           Foreground="#333333"
-                           TextWrapping="Wrap"/>
-                </StackPanel>
-
-                <!-- 第二条信息 -->
-                <StackPanel>
-                    <TextBlock Text="信息2" 
-                           FontSize="12" 
-                           Foreground="#666666"
-                           FontWeight="Bold"/>
-                    <TextBlock Text="{Binding AIReply}" 
-                           FontSize="14" 
-                           Foreground="#333333"
-                           TextWrapping="Wrap"/>
-                </StackPanel>
+                <TextBlock Text="{Binding UserMessage}"
+                           Width="{Binding ElementName=MessageScrollViewer, Path=ViewportWidth}"
+                           TextWrapping="Wrap"
+                           FontSize="14"
+                           Foreground="#333333"/>
             </StackPanel>
-        </Border>
+
+            <!-- 第二条信息 -->
+            <StackPanel>
+                <TextBlock Text="回答"
+                           FontSize="12"
+                           Foreground="#666666"
+                           FontWeight="Bold"/>
+                <TextBlock Text="{Binding AIReply}"
+                           Width="{Binding ElementName=MessageScrollViewer, Path=ViewportWidth}"
+                           TextWrapping="Wrap"
+                           FontSize="14"
+                           Foreground="#333333"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Border>
 
         <!-- 下部分：聊天输入区域 -->
         <Border Grid.Row="1"
