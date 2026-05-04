@@ -1,12 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TreeChat.Commands;
 using TreeChat.Models;
-using TreeChat.Services;
 
 namespace TreeChat.ViewModels
 {

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using TreeChat.Commands;
 using TreeChat.Models;
 using TreeChat.Services;
-using TreeChat.Views;
 
 namespace TreeChat.ViewModels
 {
@@ -87,41 +81,53 @@ namespace TreeChat.ViewModels
         {
             if (string.IsNullOrWhiteSpace(InputMessage) || SelectedNode == null || CurrentChatTree == null) return;
 
+            TreeNodeVM previousSelected = SelectedNode;
+            TreeNodeVM? newNodeVM = null;   // 提升到外部，用于异常时清理
+
             try
             {
-                // 检查API Key是否有效
-                if (string.IsNullOrWhiteSpace(CurrentChatTree.ApiKey))
+                if (string.IsNullOrWhiteSpace(ApiConfig.ApiKey))
                 {
                     MessageBox.Show("请更改有效的APIKey值！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                // 先创建新节点
+                // 创建新节点
                 ChatTreeNode newNode = new ChatTreeNode(SelectedNode.Node, new ChatMessage("user", InputMessage));
-                TreeNodeVM newNodeVM = SelectedNode.AddChild(newNode);
+                newNodeVM = SelectedNode.AddChild(newNode);
                 ChatTreeChanged?.Invoke(SelectedNode, newNodeVM);
                 SelectedNode = newNodeVM;
-
                 InputMessage = string.Empty;
 
-                // 调用API
+                // 调用 API
                 AiCallResult result = await OpenAIChat.Instance.CallAiApi(SelectedNode.Node.GetFullContext(), CurrentChatTree);
 
                 if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.Content))
                 {
-                    // 设置 AI 回复（仅成功时写入树节点，避免错误信息污染上下文）
                     SelectedNode.Node.SetAiReply(new ChatMessage("assistant", result.Content));
                     AIReply = result.Content;
                     return;
                 }
 
-                // 失败：弹窗提示，不写入节点回复
+                // 失败清理
+                previousSelected.RemoveChild(newNodeVM);
+                SelectedNode = previousSelected;
+                ChatTreeChanged?.Invoke(SelectedNode, SelectedNode);
+
                 string userPrompt = GetUserFriendlyErrorPrompt(result);
                 MessageBox.Show(userPrompt, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 AIReply = string.Empty;
             }
             catch (Exception ex)
             {
+                // 如果已经创建了节点，则将其移除
+                if (newNodeVM != null && previousSelected.Children.Contains(newNodeVM))
+                {
+                    previousSelected.RemoveChild(newNodeVM);
+                }
+                // 恢复选中节点（可能在创建节点后 SelectedNode 已被修改）
+                SelectedNode = previousSelected;
+
                 MessageBox.Show($"请求过程中发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 AIReply = string.Empty;
             }

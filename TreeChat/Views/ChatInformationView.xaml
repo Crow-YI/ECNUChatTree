@@ -6,83 +6,44 @@
              xmlns:local="clr-namespace:TreeChat.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Margin="10,10">
+    <Grid Margin="0,8,8,8">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-<!-- 上部分：信息展示区域（可滚动完整阅读） -->
-<Border Grid.Row="0"
-        Background="White"
-        CornerRadius="4"
-        Padding="10">
-    <ScrollViewer x:Name="MessageScrollViewer"
-              VerticalScrollBarVisibility="Auto"
-              HorizontalScrollBarVisibility="Disabled">
-        <StackPanel VerticalAlignment="Top">
-            <!-- 第一条信息 -->
-            <StackPanel>
-                <TextBlock Text="提问"
-                           FontSize="12"
-                           Foreground="#666666"
-                           FontWeight="Bold"/>
-                <TextBlock Text="{Binding UserMessage}"
-                           Width="{Binding ElementName=MessageScrollViewer, Path=ViewportWidth}"
-                           TextWrapping="Wrap"
-                           FontSize="14"
-                           Foreground="#333333"/>
-            </StackPanel>
+        <!-- 消息展示区卡片 -->
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="12" 
+                BorderBrush="#E2E6EA" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <ScrollViewer x:Name="MessageScrollViewer" 
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="提问" FontSize="12" Foreground="#6C7A8A" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding UserMessage}" 
+                                   TextWrapping="Wrap" FontSize="14" Foreground="#1F2A3A"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="回答" FontSize="12" Foreground="#6C7A8A" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding AIReply}" 
+                                   TextWrapping="Wrap" FontSize="14" Foreground="#1F2A3A"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
 
-            <!-- 第二条信息 -->
-            <StackPanel>
-                <TextBlock Text="回答"
-                           FontSize="12"
-                           Foreground="#666666"
-                           FontWeight="Bold"/>
-                <TextBlock Text="{Binding AIReply}"
-                           Width="{Binding ElementName=MessageScrollViewer, Path=ViewportWidth}"
-                           TextWrapping="Wrap"
-                           FontSize="14"
-                           Foreground="#333333"/>
-            </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
-</Border>
-
-        <!-- 下部分：聊天输入区域 -->
-        <Border Grid.Row="1"
-            Background="White"
-            BorderBrush="#E0E0E0"
-            BorderThickness="1"
-            CornerRadius="4"
-            Margin="0,10,0,0"
-            Padding="8">
+        <!-- 输入区卡片 -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Margin="0,12,0,0"
+                BorderBrush="#E2E6EA" BorderThickness="1" Padding="10">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <!-- 输入框占大部分空间，按钮固定宽度 -->
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
-                <!-- 文本输入框 -->
-                <TextBox Grid.Column="0"
-                     FontSize="14"
-                     Text="{Binding InputMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  
-                     Padding="8"
-                     BorderThickness="0"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True"
-                     MinHeight="60"/>
-
-                <!-- 发送按钮 -->
-                <Button Grid.Column="1"
-                        Content="发送"
-                        Command="{Binding SendMessage}"
-                        Margin="8,0,0,0"
-                        Background="#0078D7"
-                        Foreground="White"
-                        BorderThickness="0"/>
+                <TextBox Grid.Column="0" Text="{Binding InputMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         MinHeight="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                <Button Grid.Column="1" Content="发送" Command="{Binding SendMessage}" Width="70" Height="36" Margin="12,0,0,0"/>
             </Grid>
         </Border>
     </Grid>

@@ -1,7 +1,4 @@
-﻿// AsyncRelayCommand.cs（新建通用类）
-using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace TreeChat.Commands
 {
@@ -24,7 +21,7 @@ namespace TreeChat.Commands
 
         public bool CanExecute(object? parameter)
         {
-            // 执行中禁用命令（防止重复点击）
+            // 执行中禁用命令
             return !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
         }
 
@@ -36,7 +33,7 @@ namespace TreeChat.Commands
             {
                 _isExecuting = true;
                 OnCanExecuteChanged();
-                await _execute(parameter); // 执行异步逻辑
+                await _execute(parameter);
             }
             finally
             {

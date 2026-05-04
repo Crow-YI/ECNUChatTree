@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TreeChat.Services
+﻿namespace TreeChat.Services
 {
     /// <summary>
     /// OpenAI兼容的Chat Completions请求体

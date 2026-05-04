@@ -3,32 +3,25 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:TreeChat.ViewModels"
         xmlns:local="clr-namespace:TreeChat.Views"
-        Title="树形AI聊天工具" Height="600" Width="1000">
-
-    <Grid Background="Transparent">
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
+        Title="树形AI聊天工具" Height="800" Width="1200"
+        Background="{StaticResource WindowBackground}">
+    <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="600"/>
+            <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="340"/>
         </Grid.ColumnDefinitions>
 
-        <local:ChatManagementPanel Grid.Row="0" Grid.Column="0"
+        <local:ChatManagementPanel Grid.Column="0" 
                                    DataContext="{Binding ChatManagementPanelVM}"/>
 
-        <Border Grid.Row="0" Grid.Column="1" 
-                Background="#01FFFFFF"
-                BorderBrush="Gray" BorderThickness="0,0,0,0">
+        <Border Grid.Column="1" Margin="8,0,8,0" Background="Transparent">
             <local:TreeVisualizationView x:Name="treeView"
                                          DataContext="{Binding TreeVisualizationVM}"
                                          SelectedNode="{Binding SelectedNode, Mode=TwoWay}"/>
         </Border>
 
-        <local:ChatInformationView Grid.Row="0" Grid.Column="2"
+        <local:ChatInformationView Grid.Column="2"
                                    DataContext="{Binding ChatInformationVM}"/>
     </Grid>
 </Window>

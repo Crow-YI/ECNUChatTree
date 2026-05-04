@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using TreeChat.Commands;
+﻿using TreeChat.Commands;
 using TreeChat.Models;
 using TreeChat.Services;
 
@@ -85,30 +79,21 @@ namespace TreeChat.ViewModels
 
         private void ExecuteShowConfig(object? parameter)
         {
-            if (CurrentChatTree == null)
-            {
-                MessageBox.Show("当前没有选中的对话。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
+            // 直接打开配置对话框，构造时已自动读取 ApiConfig 中的当前值
             var dialog = new Views.ConfigDialog();
-            // 设置当前配置值
-            dialog.ApiKey = CurrentChatTree.ApiKey;
-            dialog.ApiEndpoint = CurrentChatTree.ApiEndpoint;
-            dialog.ModelName = CurrentChatTree.ModelName;
-            dialog.Temperature = CurrentChatTree.Temperature;
-            dialog.TopP = CurrentChatTree.TopP;
-            dialog.TopK = CurrentChatTree.TopK;
 
             if (dialog.ShowDialog() == true)
             {
-                // 保存新的配置值
-                CurrentChatTree.ApiKey = dialog.ApiKey;
-                CurrentChatTree.ApiEndpoint = dialog.ApiEndpoint;
-                CurrentChatTree.ModelName = dialog.ModelName;
-                CurrentChatTree.Temperature = dialog.Temperature;
-                CurrentChatTree.TopP = dialog.TopP;
-                CurrentChatTree.TopK = dialog.TopK;
+                // 将修改后的配置保存回全局 ApiConfig
+                ApiConfig.ApiKey = dialog.ApiKey;
+                ApiConfig.ApiEndpoint = dialog.ApiEndpoint;
+                ApiConfig.ModelName = dialog.ModelName;
+                ApiConfig.Temperature = dialog.Temperature;
+                ApiConfig.TopP = dialog.TopP;
+                ApiConfig.TopK = dialog.TopK;
+
+                // 可选：立即持久化到文件
+                ApiConfig.SaveToFile();
             }
         }
 

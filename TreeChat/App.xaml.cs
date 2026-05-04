@@ -1,4 +1,5 @@
 using System.Windows;
+using TreeChat.Services;
 
 namespace TreeChat
 {
@@ -17,6 +18,16 @@ namespace TreeChat
             {
                 StartupFilePath = e.Args[0];
             }
+            base.OnStartup(e);
+            // 应用启动时读取保存的配置
+            ApiConfig.LoadFromFile();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            // 应用关闭时保存当前配置
+            ApiConfig.SaveToFile();
+            base.OnExit(e);
         }
     }
 }

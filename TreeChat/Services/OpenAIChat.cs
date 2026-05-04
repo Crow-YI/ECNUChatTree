@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -39,17 +38,17 @@ namespace TreeChat.Services
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", chatTree.ApiKey);
+                        new AuthenticationHeaderValue("Bearer", ApiConfig.ApiKey);
                     httpClient.DefaultRequestHeaders.Accept.Add(
                         new MediaTypeWithQualityHeaderValue("application/json"));
 
                     // 构造强类型请求体
                     var request = new ChatCompletionRequest
                     {
-                        model = chatTree.ModelName,
-                        temperature = chatTree.Temperature,
-                        top_p = chatTree.TopP,
-                        top_k = chatTree.TopK,
+                        model = ApiConfig.ModelName,
+                        temperature = ApiConfig.Temperature,
+                        top_p = ApiConfig.TopP,
+                        top_k = ApiConfig.TopK,
                         messages = tempList
                     };
 
@@ -63,7 +62,7 @@ namespace TreeChat.Services
                     HttpResponseMessage response;
                     try
                     {
-                        response = await httpClient.PostAsync(chatTree.ApiEndpoint, jsonContent);
+                        response = await httpClient.PostAsync(ApiConfig.ApiEndpoint, jsonContent);
                     }
                     catch (HttpRequestException ex)
                     {

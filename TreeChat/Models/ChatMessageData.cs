@@ -6,7 +6,7 @@ namespace TreeChat.Models
     public class ChatMessageData
     {
         /// <summary>
-        /// 消息角色（system/user/assistant）
+        /// 消息角色
         /// </summary>
         public string Role { get; set; } = string.Empty;
 

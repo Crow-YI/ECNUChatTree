@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using TreeChat.Commands;
 using TreeChat.Models;
@@ -89,19 +84,24 @@ namespace TreeChat.ViewModels
         /// </summary>
         private void ExecuteCreateNewChat(object? parameter)
         {
-            // 显示配置窗口
-            var configDialog = new Views.ConfigDialog();
-            if (configDialog.ShowDialog() == true)
+            // 弹出新建对话专用窗口（仅树名 + 系统信息）
+            var dialog = new Views.CreateChatDialog();
+            if (dialog.ShowDialog() == true)
             {
-                // 使用用户配置创建新对话
-                ChatTree newTree = new ChatTree(
-                    apiKey: configDialog.ApiKey,
-                    apiEndpoint: configDialog.ApiEndpoint,
-                    modelName: configDialog.ModelName,
-                    temperature: configDialog.Temperature,
-                    topP: configDialog.TopP,
-                    topK: configDialog.TopK
-                );
+                // 处理树名：空值则使用默认
+                string treeTitle = string.IsNullOrWhiteSpace(dialog.TreeTitle)
+                    ? "新对话"
+                    : dialog.TreeTitle;
+
+                // 处理系统信息：空值则使用 ChatTree 构造函数中的默认值（"你是一个有帮助的AI助手。"）
+                // 注意：ChatTree 构造函数会自己处理空字符串，因此直接传递 dialog.SystemPrompt 即可
+                string systemPrompt = dialog.SystemPrompt;
+
+                // 创建新对话树（API 配置使用全局默认，无需传入）
+                ChatTree newTree = new ChatTree(systemPrompt);
+                newTree.TreeTitle = treeTitle;
+
+                // 添加到列表并选中
                 ChatList.Add(newTree);
                 SelectedChat = newTree;
             }
